@@ -1,0 +1,6 @@
+author = 'Nate Vack'
+email = 'njvack@wisc.edu'
+version = '0.0.1'
+license = 'MIT license'
+copyright = 'Copyright (c) 2018 Nate Vack'
+url = 'https://github.com/njvack/scatterbrain'

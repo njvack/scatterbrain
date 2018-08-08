@@ -1,0 +1,20 @@
+{%- import "macros.html" as macros with context %}<!doctype html>
+<html>
+<head>
+  <title>Scatterbrain</title>
+  {{ macros.css_link('reset.css') }}
+  {{ macros.css_link('screen.css') }}
+  {{ macros.css_link('papaya.css') }}
+  {{ macros.js_include('papaya.js') }}
+  {{ macros.js_include('scatterbrain.js') }}
+  <script type="text/javascript">
+    var papaya_params=[];
+    papaya_params['kioskMode'] = true;
+  </script>
+</head>
+<body>
+  <h1>This is Scatterbrain</h1>
+  <div class="papaya" data-params="papaya_params">
+  </div>
+</body>
+</html>
