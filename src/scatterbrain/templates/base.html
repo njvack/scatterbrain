@@ -1,0 +1,14 @@
+{%- import "macros.html" as macros with context %}<!doctype html>
+<html>
+<head>
+  <title>Scatterbrain</title>
+  {{ macros.css_link('reset.css') }}
+  {{ macros.css_link('screen.css') }}
+  {{ macros.css_link('papaya.css') }}
+  {{ macros.js_include('papaya.js') }}
+  {{ macros.js_include('scatterbrain.js') }}
+</head>
+<body>
+{% block content -%}{% endblock %}
+</body>
+</html>
