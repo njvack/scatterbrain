@@ -14,6 +14,18 @@ You'll see:
 
 It's being made at [Neurohackademy 2018](http://neurohackademy.org/neurohack_year/2018/).
 
+# The Plan
+
+## WHEN WE CHANGE MODELS
+
+* Request a stats map for that model
+* Request plot data at current voxel
+
+## WHEN WE CHANGE VOXELS
+
+* Request plot data at current voxel
+
+
 # Thanks to:
 
 * The organizers, instructors at Neurohackademy.
