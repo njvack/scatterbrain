@@ -3,10 +3,15 @@
 <head>
   <title>Scatterbrain</title>
   {{ macros.css_link('reset.css') }}
-  {{ macros.css_link('screen.css') }}
   {{ macros.css_link('papaya.css') }}
   {{ macros.js_include('papaya.js') }}
   {{ macros.js_include('scatterbrain.js') }}
+  <style type="text/css">
+  .container {
+    display: grid;
+    grid-template-columns: 500px 500px;
+  }
+  </style>
 </head>
 <body>
 {% block content -%}{% endblock %}

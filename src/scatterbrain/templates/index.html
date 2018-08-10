@@ -1,6 +1,52 @@
 {%- extends "base.html" %}
 {% block content -%}
 <h1>This is Scatterbrain</h1>
-<div class="papaya" data-params="papaya_params">
+<script type="text/javascript">
+  var regress_voxel_url = '{{url_for('regress_voxel')}}';
+  // TODO: Debounce this shit
+
+  var ctxManager = function() {
+  };
+
+  ctxManager.prototype.clearContext = function() {
+      var currentCoor = papayaContainers[0].viewer.cursorPosition;
+      var coor = new papaya.core.Coordinate(currentCoor.x, currentCoor.y, currentCoor.z);
+      console.log(`coords: ${coor}`);
+
+      coords = {
+        'x': coor.x,
+        'y': coor.y,
+        'z': coor.z
+      };
+
+      fetch(`${regress_voxel_url}?${$.param(coords)}`)
+        .then(function(response) {
+          return response.json();
+        })
+        .then(function(someJson) {
+          console.log(someJson);
+        })
+  };
+
+  var papaya_params = {};
+  papaya_params['worldSpace'] = false;
+  papaya_params['smoothDisplay'] = false;
+  papaya_params['contextManager'] = new ctxManager();
+  papaya_params['images'] = [
+    '{{url_for('static',filename='anat/MNI152_T1_2mm_brain.nii.gz')}}',
+    '{{url_for('static',filename='statmaps/tmap.nii.gz')}}'
+  ]
+  papaya_params['tmap.nii.gz'] = {
+    'parametric': true,
+    'symmetric': true,
+    'min': 0,
+    'max': 3
+  }
+</script>
+<div class="container">
+  <div class="papaya_wrapper">
+    <div class="papaya" data-params="papaya_params"></div>
+  </div>
+  <div class="scatterplot"></div>
 </div>
 {% endblock %}
