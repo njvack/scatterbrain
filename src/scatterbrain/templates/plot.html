@@ -8,15 +8,33 @@
   var ctxManager = function() {
   };
 
+
+  papaya.volume.Transform.prototype.getVoxelNatveCoords = function (xLoc, yLoc, zLoc, timepoint, useNN) {
+      var xTrans, yTrans, zTrans;
+      xTrans = ((xLoc * this.worldMat[0][0]) + (yLoc * this.worldMat[0][1]) + (zLoc * this.worldMat[0][2]) +
+          (this.worldMat[0][3]));
+      yTrans = ((xLoc * this.worldMat[1][0]) + (yLoc * this.worldMat[1][1]) + (zLoc * this.worldMat[1][2]) +
+          (this.worldMat[1][3]));
+      zTrans = ((xLoc * this.worldMat[2][0]) + (yLoc * this.worldMat[2][1]) + (zLoc * this.worldMat[2][2]) +
+          (this.worldMat[2][3]));
+
+      return [xTrans, yTrans, zTrans]
+  };
+
+
   ctxManager.prototype.clearContext = function() {
+      var con = papayaContainers[0];
+      var vol = con.viewer.screenVolumes[1].volume;
+      var xf = vol.transform;
       var currentCoor = papayaContainers[0].viewer.cursorPosition;
       var coor = new papaya.core.Coordinate(currentCoor.x, currentCoor.y, currentCoor.z);
-      console.log(`coords: ${coor}`);
+      var transformed = xf.getVoxelNatveCoords(coor.x, coor.y, coor.z)
+      console.log(`coords: ${coor}, transformed: ${transformed}`);
 
       coords = {
-        'x': coor.x,
-        'y': coor.y,
-        'z': coor.z
+        'x': transformed[0],
+        'y': transformed[1],
+        'z': transformed[2]
       };
 
       fetch(`${regress_voxel_url}?${$.param(coords)}`)
@@ -29,7 +47,7 @@
   };
 
   var papaya_params = {};
-  papaya_params['worldSpace'] = false;
+  papaya_params['worldSpace'] = true;
   papaya_params['smoothDisplay'] = false;
   papaya_params['contextManager'] = new ctxManager();
   papaya_params['images'] = [

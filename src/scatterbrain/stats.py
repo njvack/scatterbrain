@@ -8,13 +8,13 @@ import nibabel
 
 from . import settings
 
+import logging
+logger = logging.getLogger(__name__)
+
 
 def papaya_coords_to_numpy_coords(image, papaya_coords):
     # papaya_coords should be a tuple (x, y, z)
-    papaya_coords_ar = np.array(papaya_coords)
-    shapearr = np.array(image.shape[0:3])
-    bounds = shapearr - 1
-    return tuple(bounds - papaya_coords_ar.astype(bounds.dtype))
+    return tuple(np.rint(papaya_coords).astype(int))
 
 
 def get_voxel_values(image, papaya_coords):
@@ -29,6 +29,8 @@ def build_and_fit_model(image_key, df_key, papaya_coords):
     df['__CONST'] = 1
     y = get_voxel_values(image, papaya_coords)
     x = df[['__CONST', 'SRS_RAW_TOTAL']]
+    logger.debug(y)
+    logger.debug(x)
     model = sm.OLS(y, x)
     result = model.fit()
     return result
@@ -38,7 +40,7 @@ def regress_for_scatterplot(image_key, df_key, papaya_coords):
     result = build_and_fit_model(image_key, df_key, papaya_coords)
     points = np.column_stack((
         np.arange(result.nobs),
-        result.model.exog[:, 0],
+        result.model.exog[:, 1],
         result.model.endog,
         np.ones_like(result.model.endog),
         np.zeros_like(result.model.endog)

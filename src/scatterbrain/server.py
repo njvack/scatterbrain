@@ -9,7 +9,7 @@ app = Flask(__name__)
 
 
 logger = app.logger
-
+stats.logger = app.logger
 
 @app.route('/')
 def index():
@@ -26,9 +26,9 @@ def plot(image_key, csv_key):
 def regress_voxel(image_key, csv_key):
     a = request.args
     papaya_coords = (
-        a.get('x', 0),
-        a.get('y', 0),
-        a.get('z', 0)
+        float(a.get('x', 0)),
+        float(a.get('y', 0)),
+        float(a.get('z', 0))
     )
     logger.info(f"I am in regress_voxel, gonna regress {request.args}")
     return jsonify(stats.regress_for_scatterplot(
