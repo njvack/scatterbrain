@@ -9,7 +9,7 @@
   };
 
 
-  papaya.volume.Transform.prototype.getVoxelNatveCoords = function (xLoc, yLoc, zLoc, timepoint, useNN) {
+  papaya.volume.Transform.prototype.getWorldCoords = function (xLoc, yLoc, zLoc, timepoint, useNN) {
       var xTrans, yTrans, zTrans;
       xTrans = ((xLoc * this.worldMat[0][0]) + (yLoc * this.worldMat[0][1]) + (zLoc * this.worldMat[0][2]) +
           (this.worldMat[0][3]));
@@ -22,28 +22,71 @@
   };
 
 
+  papaya.volume.Transform.prototype.getVoxelNatveCoords = function (xLoc, yLoc, zLoc, timepoint, useNN) {
+      var xTrans, yTrans, zTrans;
+      xTrans = ((xLoc * this.worldMat[0][0]) + (yLoc * this.worldMat[0][1]) + (zLoc * this.worldMat[0][2]) +
+          (this.worldMat[0][3]));
+      yTrans = ((xLoc * this.worldMat[1][0]) + (yLoc * this.worldMat[1][1]) + (zLoc * this.worldMat[1][2]) +
+          (this.worldMat[1][3]));
+      zTrans = ((xLoc * this.worldMat[2][0]) + (yLoc * this.worldMat[2][1]) + (zLoc * this.worldMat[2][2]) +
+          (this.worldMat[2][3]));
+
+      return [xTrans, yTrans, zTrans]
+  };
+
+  papaya.viewer.Viewer.prototype.currentCoordWorld = function() {
+    var origin = this.screenVolumes[0].volume.header.origin;
+    var viewerVoxelDims = this.screenVolumes[0].volume.header.voxelDimensions;
+    return {
+      x: ((this.currentCoord.x - origin.x) * viewerVoxelDims.xSize),
+      y: (-(this.currentCoord.y - origin.y) * viewerVoxelDims.ySize),
+      z: (-(this.currentCoord.z - origin.z) * viewerVoxelDims.zSize)
+    };
+  }
+
+  // function convertCoordToWorld(dim, dim_name, viewer) {
+  //   viewerOrigin = viewer.screenVolumes[0].volume.header.origin;  // base image origin
+  //   viewerVoxelDims = viewer.screenVolumes[0].volume.header.voxelDimensions;
+  //   return (xLoc - viewerOrigin.x) * viewerVoxelDims.xSize
+  // }
+
+  plot_at_voxel = function() {
+    var con = papayaContainers[0];
+    var vol = con.viewer.screenVolumes[1].volume;
+    var xf = vol.transform;
+    var coor = papayaContainers[0].viewer.currentCoordWorld();
+    // var coor = new papaya.core.Coordinate(currentCoor.x, currentCoor.y, currentCoor.z);
+    var transformed = xf.getVoxelNatveCoords(coor.x, coor.y, coor.z);
+    console.log(coor);
+    console.log(`coor: ${coor}, transformed: ${transformed}`);
+
+    coords = {
+      'x': transformed[0],
+      'y': transformed[1],
+      'z': transformed[2],
+      'world_coords': '('+[coor.x, coor.y, coor.z].map(Math.round)+')'
+    };
+
+    fetch(`${regress_voxel_url}?${$.param(coords)}`)
+      .then(function(response) {
+        return response.json();
+      })
+      .then(function(data) {
+        Sdata.scatterplot.update(
+            data.points,
+            data.regression_line,
+            data.x_label,
+            data.y_label,
+            data.group_list,
+            data.model_type,
+            [],
+            []
+        );
+      })
+  }
+
   ctxManager.prototype.clearContext = function() {
-      var con = papayaContainers[0];
-      var vol = con.viewer.screenVolumes[1].volume;
-      var xf = vol.transform;
-      var currentCoor = papayaContainers[0].viewer.cursorPosition;
-      var coor = new papaya.core.Coordinate(currentCoor.x, currentCoor.y, currentCoor.z);
-      var transformed = xf.getVoxelNatveCoords(coor.x, coor.y, coor.z)
-      console.log(`coords: ${coor}, transformed: ${transformed}`);
-
-      coords = {
-        'x': transformed[0],
-        'y': transformed[1],
-        'z': transformed[2]
-      };
-
-      fetch(`${regress_voxel_url}?${$.param(coords)}`)
-        .then(function(response) {
-          return response.json();
-        })
-        .then(function(someJson) {
-          console.log(someJson);
-        })
+    plot_at_voxel();
   };
 
   var papaya_params = {};
@@ -65,6 +108,51 @@
   <div class="papaya_wrapper">
     <div class="papaya" data-params="papaya_params"></div>
   </div>
-  <div class="scatterplot"></div>
+  <div class="scatterplot">
+    <div id="scatterize"></div>
+  </div>
 </div>
+<div id="stats"></div>
+
+<script type="text/javascript">
+var Sdata = {};
+var columns = {{ columns|tojson|safe }};
+(function($) {
+  $(document).ready(function() {
+    Sdata.scatterplot = S2.scatterplot(
+      "#scatterize", 370, 370, 15, 15, 40, 0, 20, 20, S2.color_scales);
+
+    Sdata.stats_dashboard = S2.stats_dashboard('#stats');
+
+    Sdata.state_manager = S2.state_manager(
+      regress_voxel_url,
+      regress_voxel_url,
+      '',
+      columns,
+      Sdata.scatterplot,
+      '#x_col',
+      '#y_col',
+      '#x_ticks',
+      '#y_ticks',
+      '#f_col',
+      "#highlight_col",
+      '#nuisance_vars',
+      '#model_select',
+      '#download_link',
+      Sdata.stats_dashboard,
+      key
+    );
+    $(window).trigger("hashchange");
+  });
+
+  $(window).bind("hashchange", function(e) {
+    Sdata.state_manager.hashchange(e);
+  });
+
+  $('.papaya_wrapper').on('click', function(ev) {plot_at_voxel()});
+  $('.papaya_wrapper').on('keyup', function(ev) {plot_at_voxel()});
+
+})(jQuery);
+</script>
+
 {% endblock %}

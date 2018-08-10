@@ -631,6 +631,7 @@ var S2 = function ($, d3) {
     };
 
     pub.hashchange = function(evt) {
+      console.log(evt);
       // The main method that'll get called.
       var x_labels, y_labels;
       pub.update_controls();

@@ -36,7 +36,7 @@ def build_and_fit_model(image_key, df_key, papaya_coords):
     return result
 
 
-def regress_for_scatterplot(image_key, df_key, papaya_coords):
+def regress_for_scatterplot(image_key, df_key, papaya_coords, world_coords):
     result = build_and_fit_model(image_key, df_key, papaya_coords)
     points = np.column_stack((
         np.arange(result.nobs),
@@ -60,7 +60,7 @@ def regress_for_scatterplot(image_key, df_key, papaya_coords):
         regression_line=regression_line,
         group_list=[],
         x_label='SRS_RAW_TOTAL',
-        y_label=f'Voxel {papaya_coords}',
+        y_label=f'Voxel {world_coords}',
         model_type='OLS')
 
 
