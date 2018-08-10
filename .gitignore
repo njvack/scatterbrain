@@ -1,3 +1,6 @@
+settings.py
+
+# General .gitignore stuff from here on out
 .DS_store
 
 *.py[cod]
